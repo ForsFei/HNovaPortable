@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HNovaPortable/HNovaPortable.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HNovaPortable.Smoke/HNovaPortable.Smoke.csproj" />
+  </Folder>
+</Solution>
