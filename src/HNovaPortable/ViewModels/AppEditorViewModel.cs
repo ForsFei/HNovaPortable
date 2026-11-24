@@ -43,6 +43,8 @@ public partial class AppEditorViewModel : ObservableObject
         Arguments = entry.Arguments ?? string.Empty;
         WorkDirectory = entry.WorkDirectory ?? string.Empty;
         Notes = entry.Notes ?? string.Empty;
+        GithubUrl = entry.GithubUrl ?? string.Empty;
+        WebsiteUrl = entry.WebsiteUrl ?? string.Empty;
         IsFavorite = entry.IsFavorite;
         Icon = icons.Load(entry.IconKey, entry.ResolveExecutablePath(paths.Root));
 
@@ -84,6 +86,56 @@ public partial class AppEditorViewModel : ObservableObject
     [ObservableProperty]
     private bool isSaving;
 
+    [ObservableProperty]
+    private string githubUrl = "";
+
+    [ObservableProperty]
+    private string websiteUrl = "";
+
+    [ObservableProperty]
+    private string updateStatus = "";
+
+    [ObservableProperty]
+    private bool hasUpdate;
+
+    partial void OnUpdateStatusChanged(string value) => HasUpdate = false;
+
+    [RelayCommand]
+    private async Task CheckUpdateAsync()
+    {
+        UpdateStatus = "正在检查更新…";
+        var result = await AppUpdateService.CheckAsync(GithubUrl, WebsiteUrl, VersionText);
+        UpdateStatus = result.Message;
+        HasUpdate = result.HasUpdate;
+    }
+
+    [RelayCommand]
+    private void OpenWebsite() => OpenPage(WebsiteUrl);
+
+    [RelayCommand]
+    private void OpenGithub() => OpenPage(GithubUrl);
+
+    private void OpenPage(string address)
+    {
+        if (!Uri.TryCreate(address.Trim(), UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+        {
+            UpdateStatus = "请填写有效的 HTTPS 地址";
+            return;
+        }
+
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(uri.AbsoluteUri)
+            {
+                UseShellExecute = true,
+            });
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            UpdateStatus = "无法打开浏览器";
+        }
+    }
+
     public string PathText { get; }
 
     public string ModeText { get; }
@@ -118,6 +170,8 @@ public partial class AppEditorViewModel : ObservableObject
             _entry.Arguments = string.IsNullOrWhiteSpace(Arguments) ? null : Arguments.Trim();
             _entry.WorkDirectory = string.IsNullOrWhiteSpace(WorkDirectory) ? null : WorkDirectory.Trim();
             _entry.Notes = string.IsNullOrWhiteSpace(Notes) ? null : Notes.Trim();
+            _entry.GithubUrl = string.IsNullOrWhiteSpace(GithubUrl) ? null : GithubUrl.Trim();
+            _entry.WebsiteUrl = string.IsNullOrWhiteSpace(WebsiteUrl) ? null : WebsiteUrl.Trim();
             _entry.IsFavorite = IsFavorite;
 
             var tags = TagsText

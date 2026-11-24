@@ -42,6 +42,19 @@ public partial class App : Application
                 return;
             }
 
+            if (e.Args.Length >= 2 && e.Args[0].Equals("--startup-app", StringComparison.OrdinalIgnoreCase))
+            {
+                var apps = Services.GetRequiredService<AppRepository>();
+                var entry = apps.GetAsync(e.Args[1]).GetAwaiter().GetResult();
+                if (entry is not null && StartupService.IsEnabled(entry))
+                {
+                    Services.GetRequiredService<LaunchService>().LaunchAsync(entry).GetAwaiter().GetResult();
+                }
+
+                Shutdown(0);
+                return;
+            }
+
             var settings = Services.GetRequiredService<SettingsService>();
             settings.Load();
 

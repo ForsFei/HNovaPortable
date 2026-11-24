@@ -13,6 +13,8 @@ public sealed class Category
     public DateTimeOffset CreatedUtc { get; set; } = DateTimeOffset.UtcNow;
 
     public int AppCount { get; set; }
+
+    public override string ToString() => Name;
 }
 
 public sealed class Tag

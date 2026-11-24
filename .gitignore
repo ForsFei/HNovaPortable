@@ -6,4 +6,6 @@ obj/
 publish/
 artifacts/
 Data/
+!src/HNovaPortable/Data/
+!src/HNovaPortable/Data/*.cs
 Apps/

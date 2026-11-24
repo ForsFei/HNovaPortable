@@ -290,6 +290,8 @@ public sealed class PackageImportService(
                     CategoryId = categoryId,
                     IsFavorite = packageApp.IsFavorite,
                     Notes = packageApp.Notes,
+                    GithubUrl = packageApp.GithubUrl,
+                    WebsiteUrl = packageApp.WebsiteUrl,
                     IconKey = iconKey,
                     ExeVersion = packageApp.ExeVersion,
                     ProductName = packageApp.ProductName,
@@ -361,12 +363,17 @@ public sealed class PackageImportService(
     {
         await using var connection = Database.OpenAt(databasePath, readOnly: true);
         await using var command = connection.CreateCommand();
-        command.CommandText = """
+        using var columns = connection.CreateCommand();
+        columns.CommandText = "SELECT count(*) FROM pragma_table_info('apps') WHERE name IN ('github_url', 'website_url')";
+        var links = Convert.ToInt32(await columns.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false)) == 2
+            ? "a.github_url, a.website_url" : "NULL, NULL";
+        command.CommandText = $"""
             SELECT a.id, a.name, a.mode, a.rel_path, a.linked_path, a.work_dir, a.arguments,
                    IFNULL(c.name, ''), a.is_favorite, IFNULL(a.notes, ''), IFNULL(a.icon_key, ''),
                    IFNULL(a.exe_version, ''), IFNULL(a.product_name, ''), IFNULL(a.company, ''),
                    IFNULL(a.description, ''), a.size_bytes, a.portability_flags,
-                   (SELECT GROUP_CONCAT(t.name, char(31)) FROM app_tags at JOIN tags t ON t.id = at.tag_id WHERE at.app_id = a.id)
+                   (SELECT GROUP_CONCAT(t.name, char(31)) FROM app_tags at JOIN tags t ON t.id = at.tag_id WHERE at.app_id = a.id),
+                   {links}
             FROM apps a
             LEFT JOIN categories c ON c.id = a.category_id
             ORDER BY a.sort_name, a.name;
@@ -389,6 +396,8 @@ public sealed class PackageImportService(
                 CategoryName = reader.GetString(7),
                 IsFavorite = reader.GetInt32(8) != 0,
                 Notes = reader.IsDBNull(9) ? null : reader.GetString(9),
+                GithubUrl = reader.IsDBNull(18) ? null : reader.GetString(18),
+                WebsiteUrl = reader.IsDBNull(19) ? null : reader.GetString(19),
                 IconKey = reader.IsDBNull(10) ? null : reader.GetString(10),
                 ExeVersion = reader.IsDBNull(11) ? null : reader.GetString(11),
                 ProductName = reader.IsDBNull(12) ? null : reader.GetString(12),
@@ -447,6 +456,8 @@ public sealed class PackageImportService(
         public bool IsFavorite { get; init; }
 
         public string? Notes { get; init; }
+        public string? GithubUrl { get; init; }
+        public string? WebsiteUrl { get; init; }
 
         public string? IconKey { get; init; }
 
