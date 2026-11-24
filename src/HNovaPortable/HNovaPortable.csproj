@@ -9,12 +9,14 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>HNovaPortable</AssemblyName>
     <RootNamespace>HNovaPortable</RootNamespace>
+    <ApplicationIcon>Assets/HNovaPortable.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
   </PropertyGroup>
 
   <ItemGroup>
+    <Resource Include="Assets/HNovaPortable.ico" />
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

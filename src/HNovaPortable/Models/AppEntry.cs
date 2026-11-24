@@ -28,6 +28,8 @@ public sealed class AppEntry
 
     public bool IsFavorite { get; set; }
 
+    public string? GithubUrl { get; set; }
+    public string? WebsiteUrl { get; set; }
     public string? Notes { get; set; }
 
     /// <summary>图标缓存文件名（Data/icons 下），为空时运行时从 EXE 提取。</summary>

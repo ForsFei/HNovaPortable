@@ -71,8 +71,30 @@
                 <TextBox Style="{StaticResource InputTextBoxStyle}" Margin="0,6,0,0" Text="{Binding WorkDirectory, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Text="{Binding WorkDirectoryHint}" Style="{StaticResource Text.Caption}" Margin="0,5,0,0" TextWrapping="Wrap" />
 
-                <TextBlock Text="备注" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,14,0,0" />
+                <TextBlock Text="功能描述" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,14,0,0" />
                 <TextBox Style="{StaticResource InputTextAreaStyle}" Margin="0,6,0,0" Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Margin="0,12,0,4" Text="GitHub 仓库（可选）" />
+                <TextBox Style="{StaticResource InputTextBoxStyle}" Text="{Binding GithubUrl, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Margin="0,8,0,4" Text="官网地址" />
+                <TextBox Style="{StaticResource InputTextBoxStyle}" Text="{Binding WebsiteUrl, UpdateSourceTrigger=PropertyChanged}" />
+                <WrapPanel Margin="0,8,0,0">
+                    <Button Style="{StaticResource AccentButtonStyle}" Margin="0,0,6,6" Padding="12,5" Content="检查更新" Command="{Binding CheckUpdateCommand}" />
+                    <Button Style="{StaticResource GhostButtonStyle}" Margin="0,0,6,6" Padding="12,5" Content="打开 GitHub" Command="{Binding OpenGithubCommand}" />
+                    <Button Style="{StaticResource GhostButtonStyle}" Margin="0,0,0,6" Padding="12,5" Content="打开官网" Command="{Binding OpenWebsiteCommand}" />
+                </WrapPanel>
+                <TextBlock Margin="0,5,0,0" Text="{Binding UpdateStatus}" TextWrapping="Wrap">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasUpdate}" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource BrushAccent}" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
 
                 <CheckBox Style="{StaticResource CheckBoxStyle}"
                           Margin="0,16,0,0"

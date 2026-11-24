@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="HNova Portable"
+        Icon="/Assets/HNovaPortable.ico"
         Height="880"
         Width="1360"
         MinHeight="640"
@@ -97,14 +98,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
-                    <Border Width="20" Height="20" CornerRadius="6" Background="{DynamicResource BrushBrandMark}">
-                        <TextBlock Text="H"
-                                   FontSize="11"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center" />
-                    </Border>
+                    <Image Source="/Assets/HNovaPortable.ico" Width="20" Height="20" />
                     <TextBlock Text="HNova Portable"
                                Margin="9,0,0,0"
                                FontSize="12.5"
@@ -271,7 +265,7 @@
                             <TextBox x:Name="SearchBox"
                                      Width="240"
                                      Style="{StaticResource SearchTextBoxStyle}"
-                                     Tag="搜索名称 / 标签 / 备注"
+                                     Tag="搜索名称 / 标签 / 功能描述"
                                      Text="{Binding Library.SearchText, UpdateSourceTrigger=PropertyChanged}" />
 
                             <Border Margin="8,0,0,0"
@@ -300,6 +294,10 @@
                                     ToolTip="刷新"
                                     Command="{Binding RefreshCommand}" />
 
+                            <Button Style="{StaticResource GhostButtonStyle}"
+                                    Margin="8,0,0,0"
+                                    Content="{Binding Library.DetailsButtonText}"
+                                    Command="{Binding Library.ToggleDetailsCommand}" />
                             <Button x:Name="MoreButton"
                                     Style="{StaticResource SubtleIconButtonStyle}"
                                     Margin="4,0,0,0"
@@ -308,6 +306,8 @@
                                     Click="More_Click">
                                 <Button.ContextMenu>
                                     <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                        <MenuItem Header="开机自启动管理…" Command="{Binding Library.ManageStartupCommand}" />
+                                        <MenuItem Header="检查全库更新" Command="{Binding Library.CheckAllUpdatesCommand}" />
                                         <MenuItem Header="重新扫描软件库" Command="{Binding Library.RescanCommand}" />
                                         <MenuItem Header="导出与迁移…" Command="{Binding Library.ExportCommand}" />
                                         <MenuItem Header="导入库包…" Command="{Binding Library.ImportPackageCommand}" />
@@ -365,7 +365,7 @@
                                     BorderBrush="{DynamicResource BrushBorderSubtle}"
                                     BorderThickness="1"
                                     CornerRadius="12"
-                                    Visibility="{Binding Library.SelectedApp, Converter={StaticResource NotNullToVisibility}}">
+                                    Visibility="{Binding Library.IsDetailsVisible, Converter={StaticResource BooleanToVisibility}}">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                     <StackPanel Margin="18" DataContext="{Binding Library.SelectedApp}">
                                         <Border Width="64" Height="64" CornerRadius="16" Background="{DynamicResource BrushBgSurfaceAlt}" HorizontalAlignment="Left">
@@ -429,11 +429,16 @@
                                                     Command="{Binding DataContext.Library.EditCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                     CommandParameter="{Binding}" />
                                             <Button Style="{StaticResource GhostButtonStyle}"
-                                                    Content="收藏"
+                                                    Content="{Binding FavoriteButtonText}"
                                                     Margin="8,0,0,0"
                                                     Command="{Binding DataContext.Library.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                     CommandParameter="{Binding}" />
                                         </StackPanel>
+
+                                        <Button Style="{StaticResource GhostButtonStyle}"
+                                                HorizontalAlignment="Left" Margin="0,8,0,0" Content="删除"
+                                                Command="{Binding DataContext.Library.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}" />
 
                                         <TextBlock Text="{Binding TagsText}"
                                                    Style="{StaticResource Text.Caption}"
@@ -441,10 +446,8 @@
                                                    TextWrapping="Wrap"
                                                    Visibility="{Binding HasTags, Converter={StaticResource BooleanToVisibility}}" />
 
-                                        <TextBlock Text="{Binding Description}"
-                                                   Style="{StaticResource Text.Body}"
-                                                   Margin="0,12,0,0"
-                                                   MaxHeight="120"
+                                        <TextBlock Text="{Binding Description}" Margin="0,14,0,0"
+                                                   Style="{StaticResource Text.Body}" TextWrapping="Wrap"
                                                    Visibility="{Binding Description, Converter={StaticResource NotEmptyToVisibility}}" />
 
                                         <Border Margin="0,14,0,0"
@@ -483,7 +486,7 @@
                                             <MenuItem Header="启动" Command="{Binding Library.LaunchCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <MenuItem Header="打开所在目录" Command="{Binding Library.OpenFolderCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <Separator />
-                                            <MenuItem Header="收藏 / 取消收藏" Command="{Binding Library.ToggleFavoriteCommand}" CommandParameter="{Binding Library.SelectedApp}" />
+                                            <MenuItem Header="{Binding Library.SelectedApp.FavoriteButtonText}" Command="{Binding Library.ToggleFavoriteCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <MenuItem Header="编辑信息…" Command="{Binding Library.EditCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <MenuItem Header="重新定位主程序…" Command="{Binding Library.RelocateCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <Separator />
@@ -581,7 +584,7 @@
                                             <MenuItem Header="启动" Command="{Binding Library.LaunchCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <MenuItem Header="打开所在目录" Command="{Binding Library.OpenFolderCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <Separator />
-                                            <MenuItem Header="收藏 / 取消收藏" Command="{Binding Library.ToggleFavoriteCommand}" CommandParameter="{Binding Library.SelectedApp}" />
+                                            <MenuItem Header="{Binding Library.SelectedApp.FavoriteButtonText}" Command="{Binding Library.ToggleFavoriteCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <MenuItem Header="编辑信息…" Command="{Binding Library.EditCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <MenuItem Header="重新定位主程序…" Command="{Binding Library.RelocateCommand}" CommandParameter="{Binding Library.SelectedApp}" />
                                             <Separator />
@@ -618,7 +621,10 @@
 
                                                     <StackPanel Grid.Column="1" Margin="12,0,12,0" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                                        <TextBlock Text="{Binding PathText}" Style="{StaticResource Text.Caption}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding Description}" Style="{StaticResource Text.Caption}"
+                                                                   Margin="0,2,0,0" TextTrimming="CharacterEllipsis"
+                                                                   ToolTip="{Binding Description}"
+                                                                   Visibility="{Binding Description, Converter={StaticResource NotEmptyToVisibility}}" />
                                                     </StackPanel>
 
                                                     <TextBlock Grid.Column="2"

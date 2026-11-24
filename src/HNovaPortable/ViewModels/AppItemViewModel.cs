@@ -16,6 +16,10 @@ public sealed partial class AppItemViewModel(AppEntry entry, BitmapSource? icon,
     [ObservableProperty]
     private bool isFavorite = entry.IsFavorite;
 
+    public string FavoriteButtonText => IsFavorite ? "取消收藏" : "收藏";
+
+    partial void OnIsFavoriteChanged(bool value) => OnPropertyChanged(nameof(FavoriteButtonText));
+
     public string Name => Entry.Name;
 
     public string Initial => string.IsNullOrEmpty(Entry.Name) ? "?" : Entry.Name[..1].ToUpperInvariant();
@@ -50,7 +54,7 @@ public sealed partial class AppItemViewModel(AppEntry entry, BitmapSource? icon,
 
     public string? Company => Entry.Company;
 
-    public string? Description => Entry.Description;
+    public string? Description => string.IsNullOrWhiteSpace(Entry.Notes) ? Entry.Description : Entry.Notes;
 
     public string LaunchCountText => Entry.LaunchCount == 0 ? "从未启动" : $"已启动 {Entry.LaunchCount} 次";
 

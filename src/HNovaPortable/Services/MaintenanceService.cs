@@ -144,6 +144,8 @@ public sealed class MaintenanceService(AppPaths paths, AppRepository appReposito
             CategoryId = app.CategoryId,
             IsFavorite = app.IsFavorite,
             Notes = app.Notes,
+            GithubUrl = app.GithubUrl,
+            WebsiteUrl = app.WebsiteUrl,
             IconKey = iconKey,
             SizeBytes = app.SizeBytes,
             Health = AppHealth.Ok,

@@ -137,7 +137,7 @@ internal static class Program
             Check(File.Exists(Path.Combine(exportTarget, "export-manifest.json")), "导出应生成 manifest");
             Check(File.Exists(Path.Combine(exportTarget, "Data", "library.db")), "导出应包含 library.db");
             Check(Directory.Exists(Path.Combine(exportTarget, "Apps", "SmokeApp")), "导出应包含托管软件目录");
-            Check(File.Exists(Path.Combine(exportTarget, "Apps", "SmokeApp", Path.GetFileName(managed.ExecutablePath!))),
+            Check(File.Exists(Path.Combine(exportTarget, managedEntry.RelativePath!)),
                 "导出包内的主程序应可执行");
 
             var exportedDb = Path.Combine(exportTarget, "Data", "library.db");

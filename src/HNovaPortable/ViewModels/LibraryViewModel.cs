@@ -73,7 +73,57 @@ public partial class LibraryViewModel : ObservableObject
     public ObservableCollection<Category> Categories { get; } = [];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDetailsVisible))]
     private AppItemViewModel? selectedApp;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDetailsVisible))]
+    [NotifyPropertyChangedFor(nameof(DetailsButtonText))]
+    private bool showDetails = true;
+
+    public bool IsDetailsVisible => ShowDetails && SelectedApp is not null;
+
+    public string DetailsButtonText => ShowDetails ? "隐藏详情" : "显示详情";
+
+    [RelayCommand]
+    private void ToggleDetails() => ShowDetails = !ShowDetails;
+
+    [RelayCommand]
+    private async Task ManageStartupAsync()
+    {
+        try
+        {
+            var entries = await _apps.ListAsync(new AppQuery());
+            _dialogs.ShowStartupManager(entries, _paths);
+        }
+        catch (Exception ex)
+        {
+            _dialogs.Error("无法读取自启设置：" + ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task CheckAllUpdatesAsync()
+    {
+        StatusMessage = "正在检查全库更新…";
+        try
+        {
+            var entries = await _apps.ListAsync(new AppQuery());
+            var results = new List<(string Name, string? GithubUrl, AppUpdateResult Result)>(entries.Count);
+            foreach (var batch in entries.Chunk(4))
+            {
+                results.AddRange(await Task.WhenAll(batch.Select(async app =>
+                    (app.Name, app.GithubUrl, await AppUpdateService.CheckAsync(app.GithubUrl, app.WebsiteUrl, app.ExeVersion)))));
+            }
+
+            StatusMessage = $"全库更新检查完成（{entries.Count} 个软件）";
+            _dialogs.ShowUpdateResults(results);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = "全库更新检查失败：" + ex.Message;
+        }
+    }
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -389,6 +439,7 @@ public partial class LibraryViewModel : ObservableObject
 
         try
         {
+            StartupService.SetEnabled(item.Entry, _paths, false);
             await _apps.DeleteAsync(item.Entry.Id).ConfigureAwait(true);
 
             var iconPath = Path.Combine(_paths.IconsDirectory, item.Entry.Id + ".png");
