@@ -95,9 +95,15 @@ public sealed class AppRepository(Database database)
         return result;
     }
 
-    public async Task<AppEntry?> GetAsync(string id, CancellationToken cancellationToken = default)
+    public Task<AppEntry?> GetAsync(string id, CancellationToken cancellationToken = default) =>
+        GetCoreAsync(id, readOnly: false, cancellationToken);
+
+    internal Task<AppEntry?> GetForStartupAsync(string id) =>
+        GetCoreAsync(id, readOnly: true, CancellationToken.None);
+
+    private async Task<AppEntry?> GetCoreAsync(string id, bool readOnly, CancellationToken cancellationToken)
     {
-        await using var connection = _database.Open();
+        await using var connection = readOnly ? Database.OpenAt(_database.FilePath, readOnly: true) : _database.Open();
         await using var command = connection.CreateCommand();
         command.CommandText = $"SELECT {ColumnList}, {TagSubQuery} FROM apps a WHERE a.id = $id LIMIT 1;";
         command.Parameters.AddWithValue("$id", id);
@@ -237,7 +243,7 @@ public sealed class AppRepository(Database database)
 
     public async Task RecordLaunchAsync(string id, CancellationToken cancellationToken = default)
     {
-        await using var connection = _database.Open();
+        await using var connection = _database.OpenExisting();
         await using var command = connection.CreateCommand();
         command.CommandText = """
             UPDATE apps SET launch_count = launch_count + 1, last_launch_utc = $now, updated_utc = $now

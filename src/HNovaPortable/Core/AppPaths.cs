@@ -70,6 +70,13 @@ public sealed class AppPaths
         throw new IOException($"无法初始化软件库目录。{candidate}: {failure} / {fallback}: {fallbackFailure}");
     }
 
+    internal static AppPaths ForStartup(IReadOnlyList<string> args)
+    {
+        var (root, note) = ResolveCandidate(args);
+        // 登录启动只使用指定的库，不创建目录，也不使用 AppData 降级库。
+        return new AppPaths(root, false, note);
+    }
+
     private static (string Root, string? Note) ResolveCandidate(IReadOnlyList<string> args)
     {
         for (var i = 0; i < args.Count; i++)

@@ -22,6 +22,12 @@ public partial class App : Application
         base.OnStartup(e);
         DispatcherUnhandledException += OnDispatcherUnhandledException;
 
+        if (e.Args.Length > 0 && e.Args[0].Equals("--startup-app", StringComparison.OrdinalIgnoreCase))
+        {
+            Shutdown(StartupService.RunAsync(e.Args).GetAwaiter().GetResult());
+            return;
+        }
+
         try
         {
             Services = BuildServices(e.Args);
@@ -38,19 +44,6 @@ public partial class App : Application
             if (e.Args.Length >= 1 && e.Args[0].Equals("--selftest-ui", StringComparison.OrdinalIgnoreCase))
             {
                 RunUiSelfTest();
-                Shutdown(0);
-                return;
-            }
-
-            if (e.Args.Length >= 2 && e.Args[0].Equals("--startup-app", StringComparison.OrdinalIgnoreCase))
-            {
-                var apps = Services.GetRequiredService<AppRepository>();
-                var entry = apps.GetAsync(e.Args[1]).GetAwaiter().GetResult();
-                if (entry is not null && StartupService.IsEnabled(entry))
-                {
-                    Services.GetRequiredService<LaunchService>().LaunchAsync(entry).GetAwaiter().GetResult();
-                }
-
                 Shutdown(0);
                 return;
             }

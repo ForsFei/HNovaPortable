@@ -20,13 +20,16 @@ public sealed class Database
 
     public SqliteConnection Open() => OpenAt(FilePath);
 
+    public SqliteConnection OpenExisting() => OpenAt(FilePath, createIfMissing: false);
+
     /// <summary>打开任意位置的库文件（用于读取导出的库包、备份校验等）。</summary>
-    public static SqliteConnection OpenAt(string databasePath, bool readOnly = false)
+    public static SqliteConnection OpenAt(string databasePath, bool readOnly = false, bool createIfMissing = true)
     {
         var connectionString = new SqliteConnectionStringBuilder
         {
             DataSource = databasePath,
-            Mode = readOnly ? SqliteOpenMode.ReadOnly : SqliteOpenMode.ReadWriteCreate,
+            Mode = readOnly ? SqliteOpenMode.ReadOnly
+                : createIfMissing ? SqliteOpenMode.ReadWriteCreate : SqliteOpenMode.ReadWrite,
             ForeignKeys = true,
 
             // 外部库（备份/库包）不参与连接池：否则关闭连接后仍持有文件句柄，
